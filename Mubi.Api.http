@@ -1,0 +1,14 @@
+@Mubi.Api_HostAddress = http://localhost:5071
+
+GET {{Mubi.Api_HostAddress}}/api/categorias
+Accept: application/json
+
+###
+
+POST {{Mubi.Api_HostAddress}}/api/usuarios/login
+Content-Type: application/json
+
+{
+  "correo": "admin@mubi.com",
+  "contrasena": "Admin123*"
+}

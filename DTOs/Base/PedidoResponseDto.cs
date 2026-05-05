@@ -1,0 +1,2 @@
+namespace Mubi.Api.DTOs.Base;
+public class PedidoResponseDto { public int IdPedido { get; set; } public DateTime FechaPedido { get; set; } public string EstadoPedido { get; set; } = string.Empty; public decimal MontoTotal { get; set; } public decimal SaldoPendiente { get; set; } public string? Observaciones { get; set; } public DateTime? FechaActualizacion { get; set; } public int IdCliente { get; set; } public string? Cliente { get; set; } }
