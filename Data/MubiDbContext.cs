@@ -65,6 +65,10 @@ public class MubiDbContext : DbContext
             entity.Property(x => x.Correo).HasColumnName("correo");
             entity.Property(x => x.Telefono).HasColumnName("telefono");
             entity.Property(x => x.Direccion).HasColumnName("direccion");
+            entity.Property(x => x.ReferenciaDireccion).HasColumnName("referencia_direccion");
+            entity.Property(x => x.TipoCliente).HasColumnName("tipo_cliente").HasDefaultValue("persona");
+            entity.Property(x => x.Ruc).HasColumnName("ruc");
+            entity.Property(x => x.RazonSocial).HasColumnName("razon_social");
             entity.Property(x => x.DocumentoIdentidad).HasColumnName("documento_identidad");
             entity.Property(x => x.FechaRegistro).HasColumnName("fecha_registro");
             entity.Property(x => x.IdUsuario).HasColumnName("id_usuario");

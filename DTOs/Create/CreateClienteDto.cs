@@ -3,11 +3,26 @@ namespace Mubi.Api.DTOs.Create;
 public class CreateClienteDto
 {
     public string Nombres { get; set; } = string.Empty;
+
     public string Apellidos { get; set; } = string.Empty;
+
     public string Correo { get; set; } = string.Empty;
+
     public string? Telefono { get; set; }
+
     public string? Direccion { get; set; }
+
+    public string? ReferenciaDireccion { get; set; }
+
     public string? DocumentoIdentidad { get; set; }
+
+    public string TipoCliente { get; set; } = "persona";
+
+    public string? Ruc { get; set; }
+
+    public string? RazonSocial { get; set; }
+
     public int? IdUsuario { get; set; }
+
     public string Contrasena { get; set; } = string.Empty;
 }

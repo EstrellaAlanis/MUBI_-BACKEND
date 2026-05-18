@@ -74,6 +74,21 @@ public class ClienteService : IClienteService
         _context.Usuarios.Add(usuario);
         await _context.SaveChangesAsync();
 
+        var tipoCliente = NormalizeTipoCliente(dto.TipoCliente);
+        var ruc = NormalizeRuc(dto.Ruc);
+
+        if (tipoCliente == "empresa")
+        {
+            if (string.IsNullOrWhiteSpace(ruc) || ruc.Length != 11)
+                throw new Exception("Para cliente empresa, el RUC debe tener 11 dígitos.");
+
+            if (string.IsNullOrWhiteSpace(dto.RazonSocial))
+                throw new Exception("Para cliente empresa, la razón social es obligatoria.");
+
+            if (await _context.Clientes.AnyAsync(x => x.Ruc == ruc))
+                throw new Exception("Ya existe un cliente con ese RUC.");
+        }
+
         var e = new Cliente
         {
             Nombres = dto.Nombres.Trim(),
@@ -81,6 +96,10 @@ public class ClienteService : IClienteService
             Correo = correo,
             Telefono = dto.Telefono?.Trim(),
             Direccion = dto.Direccion?.Trim(),
+            ReferenciaDireccion = dto.ReferenciaDireccion?.Trim(),
+            TipoCliente = tipoCliente,
+            Ruc = tipoCliente == "empresa" ? ruc : null,
+            RazonSocial = tipoCliente == "empresa" ? dto.RazonSocial?.Trim() : null,
             DocumentoIdentidad = documento,
             FechaRegistro = DateTime.Now,
             IdUsuario = usuario.IdUsuario
@@ -99,6 +118,20 @@ public class ClienteService : IClienteService
 
         var correo = (dto.Correo ?? string.Empty).Trim().ToLower();
         var documento = NormalizeDocumento(dto.DocumentoIdentidad);
+        var tipoCliente = NormalizeTipoCliente(dto.TipoCliente);
+        var ruc = NormalizeRuc(dto.Ruc);
+
+if (tipoCliente == "empresa")
+{
+    if (string.IsNullOrWhiteSpace(ruc) || ruc.Length != 11)
+        throw new Exception("Para cliente empresa, el RUC debe tener 11 dígitos.");
+
+    if (string.IsNullOrWhiteSpace(dto.RazonSocial))
+        throw new Exception("Para cliente empresa, la razón social es obligatoria.");
+
+    if (await _context.Clientes.AnyAsync(x => x.IdCliente != id && x.Ruc == ruc))
+        throw new Exception("Ya existe otro cliente con ese RUC.");
+}
 
         if (string.IsNullOrWhiteSpace(dto.Nombres) || string.IsNullOrWhiteSpace(dto.Apellidos))
             throw new Exception("Los nombres y apellidos del cliente son obligatorios.");
@@ -120,6 +153,10 @@ public class ClienteService : IClienteService
         e.Correo = correo;
         e.Telefono = dto.Telefono?.Trim();
         e.Direccion = dto.Direccion?.Trim();
+        e.ReferenciaDireccion = dto.ReferenciaDireccion?.Trim();
+        e.TipoCliente = tipoCliente;
+        e.Ruc = tipoCliente == "empresa" ? ruc : null;
+        e.RazonSocial = tipoCliente == "empresa" ? dto.RazonSocial?.Trim() : null;
         e.DocumentoIdentidad = documento;
 
         if (e.IdUsuario.HasValue)
@@ -193,6 +230,17 @@ public class ClienteService : IClienteService
     {
         if (string.IsNullOrWhiteSpace(documento)) return null;
         return new string(documento.Where(char.IsDigit).ToArray());
+    }
+    private static string NormalizeTipoCliente(string? tipo)
+    {
+        var limpio = (tipo ?? "persona").Trim().ToLower();
+        return limpio == "empresa" ? "empresa" : "persona";
+    }
+
+    private static string? NormalizeRuc(string? ruc)
+    {
+        if (string.IsNullOrWhiteSpace(ruc)) return null;
+        return new string(ruc.Where(char.IsDigit).ToArray());
     }
     private class ApisPeruDniResponse
 {
