@@ -10,6 +10,7 @@ public class MubiDbContext : DbContext
 
     public DbSet<Rol> Roles => Set<Rol>();
     public DbSet<Usuario> Usuarios => Set<Usuario>();
+    public DbSet<ComprobanteVenta> ComprobantesVenta => Set<ComprobanteVenta>();
     public DbSet<Cliente> Clientes => Set<Cliente>();
     public DbSet<Categoria> Categorias => Set<Categoria>();
     public DbSet<Producto> Productos => Set<Producto>();
@@ -198,7 +199,35 @@ public class MubiDbContext : DbContext
                 .WithMany(x => x.Pagos)
                 .HasForeignKey(x => x.IdPedido);
         });
+        modelBuilder.Entity<ComprobanteVenta>(entity =>
+        {
+            entity.ToTable("comprobantes_venta");
+            entity.HasKey(x => x.IdComprobante);
 
+            entity.Property(x => x.IdComprobante).HasColumnName("id_comprobante");
+            entity.Property(x => x.TipoComprobante).HasColumnName("tipo_comprobante");
+            entity.Property(x => x.Serie).HasColumnName("serie");
+            entity.Property(x => x.Numero).HasColumnName("numero");
+            entity.Property(x => x.FechaEmision).HasColumnName("fecha_emision");
+            entity.Property(x => x.Subtotal).HasColumnName("subtotal").HasPrecision(10, 2);
+            entity.Property(x => x.Igv).HasColumnName("igv").HasPrecision(10, 2);
+            entity.Property(x => x.Total).HasColumnName("total").HasPrecision(10, 2);
+            entity.Property(x => x.Estado).HasColumnName("estado");
+            entity.Property(x => x.Observacion).HasColumnName("observacion");
+            entity.Property(x => x.IdPedido).HasColumnName("id_pedido");
+            entity.Property(x => x.IdCliente).HasColumnName("id_cliente");
+
+            entity.HasIndex(x => new { x.TipoComprobante, x.Serie, x.Numero }).IsUnique();
+
+            entity.HasOne(x => x.Pedido)
+                .WithMany()
+                .HasForeignKey(x => x.IdPedido);
+
+            entity.HasOne(x => x.Cliente)
+                .WithMany()
+                .HasForeignKey(x => x.IdCliente);
+        });
+        
         modelBuilder.Entity<Material>(entity =>
         {
             entity.ToTable("materiales");

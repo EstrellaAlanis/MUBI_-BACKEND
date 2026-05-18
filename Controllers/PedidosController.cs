@@ -39,7 +39,9 @@ public class PedidosController : ControllerBase
     }
 
     [HttpPost("subir-excel")]
-    public async Task<IActionResult> SubirExcel([FromForm] IFormFile archivo)
+    [Consumes("multipart/form-data")]
+
+    public async Task<IActionResult> SubirExcel(IFormFile archivo)
     {
         if (archivo == null || archivo.Length == 0)
             return BadRequest(new { message = "No se recibió ningún archivo." });
@@ -72,7 +74,9 @@ public class PedidosController : ControllerBase
     }
 
     [HttpPost("upload-diseno")]
-    public async Task<IActionResult> UploadDiseno([FromForm] IFormFile archivo)
+    [Consumes("multipart/form-data")]
+
+    public async Task<IActionResult> UploadDiseno(IFormFile archivo)
     {
         if (archivo == null || archivo.Length == 0)
             return BadRequest(new { message = "No se recibió ningún archivo." });

@@ -21,6 +21,7 @@ public static class ServiceExtensions
         services.AddScoped<IPagoService, PagoService>();
         services.AddScoped<IMaterialService, MaterialService>();
         services.AddScoped<IContactoService, ContactoService>();
+        services.AddScoped<IComprobanteVentaService, ComprobanteVentaService>();
 
         return services;
     }

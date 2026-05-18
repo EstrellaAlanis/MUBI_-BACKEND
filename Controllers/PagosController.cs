@@ -38,7 +38,8 @@ public class PagosController : ControllerBase
     }
 
     [HttpPost("upload-comprobante")]
-    public async Task<IActionResult> UploadComprobante([FromForm] IFormFile archivo)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> UploadComprobante(IFormFile archivo)
     {
         if (archivo == null || archivo.Length == 0)
             return BadRequest(new { message = "No se recibió ningún comprobante." });

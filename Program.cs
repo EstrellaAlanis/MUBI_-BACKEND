@@ -21,10 +21,13 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
-app.UseMiddleware<ExceptionMiddleware>();
+
+// TEMPORAL: comentado para poder ver errores reales de Swagger
+// app.UseMiddleware<ExceptionMiddleware>();
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
     app.UseSwaggerUI();
 }

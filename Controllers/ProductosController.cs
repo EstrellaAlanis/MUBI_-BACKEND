@@ -39,7 +39,9 @@ public class ProductosController : ControllerBase
     }
 
     [HttpPost("upload-imagen")]
-    public async Task<IActionResult> UploadImagen([FromForm] IFormFile archivo)
+    [Consumes("multipart/form-data")]
+
+    public async Task<IActionResult> UploadImagen(IFormFile archivo)
     {
         if (archivo == null || archivo.Length == 0)
             return BadRequest(new { message = "No se recibió ninguna imagen." });
