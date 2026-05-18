@@ -32,6 +32,7 @@ if (app.Environment.IsDevelopment())
 // En desarrollo se usa HTTP para evitar bloqueos de certificado entre React y ASP.NET Core.
 // app.UseHttpsRedirection();
 app.UseCors("FrontendPolicy");
+app.UseStaticFiles();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

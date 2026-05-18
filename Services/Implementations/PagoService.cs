@@ -26,9 +26,14 @@ public class PagoService : IPagoService
         _context.Pagos.Add(e);
         await _context.SaveChangesAsync();
         var totalPagado=await _context.Pagos.Where(x=>x.IdPedido==dto.IdPedido).SumAsync(x=>x.Monto);
-        pedido.SaldoPendiente=pedido.MontoTotal-totalPagado;
-        if(pedido.SaldoPendiente<0) pedido.SaldoPendiente=0;
-        pedido.FechaActualizacion=DateTime.Now;
+        pedido.SaldoPendiente = pedido.MontoTotal - totalPagado;
+        if (pedido.SaldoPendiente < 0)
+            pedido.SaldoPendiente = 0;
+
+        if (pedido.SaldoPendiente == 0)
+            pedido.EstadoPedido = "pagado";
+
+        pedido.FechaActualizacion = DateTime.Now;
         await _context.SaveChangesAsync();
         return _mapper.Map<PagoResponseDto>(e);
     }

@@ -52,7 +52,7 @@ public class MubiDbContext : DbContext
             entity.Property(x => x.IdRol).HasColumnName("id_rol");
             entity.HasIndex(x => x.Correo).IsUnique();
 
-            entity.HasOne(x => x.Rol).WithMany(x => x.Usuarios).HasForeignKey(x => x.IdRol); // agregue esto
+            entity.HasOne(x => x.Rol).WithMany(x => x.Usuarios).HasForeignKey(x => x.IdRol);
         });
 
         modelBuilder.Entity<Cliente>(entity =>
@@ -68,7 +68,11 @@ public class MubiDbContext : DbContext
             entity.Property(x => x.DocumentoIdentidad).HasColumnName("documento_identidad");
             entity.Property(x => x.FechaRegistro).HasColumnName("fecha_registro");
             entity.Property(x => x.IdUsuario).HasColumnName("id_usuario");
-            entity.HasOne(x => x.Usuario).WithOne(x => x.Cliente).HasForeignKey<Cliente>(x => x.IdUsuario).OnDelete(DeleteBehavior.SetNull);
+
+            entity.HasOne(x => x.Usuario)
+                .WithOne(x => x.Cliente)
+                .HasForeignKey<Cliente>(x => x.IdUsuario)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Categoria>(entity =>
@@ -88,11 +92,14 @@ public class MubiDbContext : DbContext
             entity.Property(x => x.IdProducto).HasColumnName("id_producto");
             entity.Property(x => x.Nombre).HasColumnName("nombre");
             entity.Property(x => x.Descripcion).HasColumnName("descripcion");
-            entity.Property(x => x.Precio).HasColumnName("precio").HasPrecision(10,2);
+            entity.Property(x => x.Precio).HasColumnName("precio").HasPrecision(10, 2);
             entity.Property(x => x.Disponibilidad).HasColumnName("disponibilidad");
             entity.Property(x => x.FechaRegistro).HasColumnName("fecha_registro");
             entity.Property(x => x.IdCategoria).HasColumnName("id_categoria");
-            entity.HasOne(x => x.Categoria).WithMany(x => x.Productos).HasForeignKey(x => x.IdCategoria);
+
+            entity.HasOne(x => x.Categoria)
+                .WithMany(x => x.Productos)
+                .HasForeignKey(x => x.IdCategoria);
         });
 
         modelBuilder.Entity<ImagenProducto>(entity =>
@@ -104,26 +111,34 @@ public class MubiDbContext : DbContext
             entity.Property(x => x.Descripcion).HasColumnName("descripcion");
             entity.Property(x => x.EsPrincipal).HasColumnName("es_principal");
             entity.Property(x => x.IdProducto).HasColumnName("id_producto");
+
+            entity.HasOne(x => x.Producto)
+                .WithMany(x => x.Imagenes)
+                .HasForeignKey(x => x.IdProducto);
         });
 
         modelBuilder.Entity<Pedido>(entity =>
         {
-            entity.ToTable("pedidos");
+            entity.ToTable("pedidos", tb => tb.HasTrigger("TR_pedidos"));
             entity.HasKey(x => x.IdPedido);
             entity.Property(x => x.IdPedido).HasColumnName("id_pedido");
             entity.Property(x => x.FechaPedido).HasColumnName("fecha_pedido");
             entity.Property(x => x.EstadoPedido).HasColumnName("estado_pedido");
-            entity.Property(x => x.MontoTotal).HasColumnName("monto_total").HasPrecision(10,2);
-            entity.Property(x => x.SaldoPendiente).HasColumnName("saldo_pendiente").HasPrecision(10,2);
+            entity.Property(x => x.MontoTotal).HasColumnName("monto_total").HasPrecision(10, 2);
+            entity.Property(x => x.SaldoPendiente).HasColumnName("saldo_pendiente").HasPrecision(10, 2);
             entity.Property(x => x.Observaciones).HasColumnName("observaciones");
+            entity.Property(x => x.RutaExcelTallas).HasColumnName("ruta_excel_tallas");
             entity.Property(x => x.FechaActualizacion).HasColumnName("fecha_actualizacion");
             entity.Property(x => x.IdCliente).HasColumnName("id_cliente");
-            entity.HasOne(x => x.Cliente).WithMany(x => x.Pedidos).HasForeignKey(x => x.IdCliente);
+
+            entity.HasOne(x => x.Cliente)
+                .WithMany(x => x.Pedidos)
+                .HasForeignKey(x => x.IdCliente);
         });
 
         modelBuilder.Entity<DetallePedido>(entity =>
         {
-            entity.ToTable("pedido_detalles");
+            entity.ToTable("pedido_detalles", tb => tb.HasTrigger("TR_pedido_detalles_subtotal"));
             entity.HasKey(x => x.IdDetallePedido);
             entity.Property(x => x.IdDetallePedido).HasColumnName("id_detalle");
             entity.Property(x => x.Talla).HasColumnName("talla");
@@ -131,17 +146,25 @@ public class MubiDbContext : DbContext
             entity.Property(x => x.Cantidad).HasColumnName("cantidad");
             entity.Property(x => x.DisenoPersonalizado).HasColumnName("diseno_personalizado");
             entity.Property(x => x.DescripcionDiseno).HasColumnName("descripcion_diseno");
-            entity.Property(x => x.PrecioUnitario).HasColumnName("precio_unitario").HasPrecision(10,2);
-            entity.Property(x => x.Subtotal).HasColumnName("subtotal").HasPrecision(10,2).ValueGeneratedOnAddOrUpdate();
+            entity.Property(x => x.PrecioUnitario).HasColumnName("precio_unitario").HasPrecision(10, 2);
+            entity.Property(x => x.Subtotal).HasColumnName("subtotal").HasPrecision(10, 2).ValueGeneratedOnAddOrUpdate();
             entity.Property(x => x.IdPedido).HasColumnName("id_pedido");
             entity.Property(x => x.IdProducto).HasColumnName("id_producto");
-            entity.HasOne(x => x.Pedido).WithMany(x => x.Detalles).HasForeignKey(x => x.IdPedido);
-            entity.HasOne(x => x.Producto).WithMany(x => x.DetallesPedido).HasForeignKey(x => x.IdProducto);
+            entity.Property(x => x.RutaDisenoFrontal).HasColumnName("ruta_diseno_frontal");
+            entity.Property(x => x.RutaDisenoPosterior).HasColumnName("ruta_diseno_posterior");
+
+            entity.HasOne(x => x.Pedido)
+                .WithMany(x => x.Detalles)
+                .HasForeignKey(x => x.IdPedido);
+
+            entity.HasOne(x => x.Producto)
+                .WithMany(x => x.DetallesPedido)
+                .HasForeignKey(x => x.IdProducto);
         });
 
         modelBuilder.Entity<HistorialEstadoPedido>(entity =>
         {
-            entity.ToTable("historial_estados_pedido");
+            entity.ToTable("historial_estados_pedido", tb => tb.HasTrigger("TR_historial_estados_pedido"));
             entity.HasKey(x => x.IdHistorialEstadoPedido);
             entity.Property(x => x.IdHistorialEstadoPedido).HasColumnName("id_historial");
             entity.Property(x => x.EstadoAnterior).HasColumnName("estado_anterior");
@@ -149,33 +172,43 @@ public class MubiDbContext : DbContext
             entity.Property(x => x.Observacion).HasColumnName("comentario");
             entity.Property(x => x.FechaCambio).HasColumnName("fecha_cambio");
             entity.Property(x => x.IdPedido).HasColumnName("id_pedido");
+
+            entity.HasOne(x => x.Pedido)
+                .WithMany(x => x.HistorialEstados)
+                .HasForeignKey(x => x.IdPedido);
         });
 
         modelBuilder.Entity<Pago>(entity =>
         {
-            entity.ToTable("pagos");
+            entity.ToTable("pagos", tb => tb.HasTrigger("TR_pagos"));
             entity.HasKey(x => x.IdPago);
             entity.Property(x => x.IdPago).HasColumnName("id_pago");
-            entity.Property(x => x.Monto).HasColumnName("monto").HasPrecision(10,2);
+            entity.Property(x => x.Monto).HasColumnName("monto").HasPrecision(10, 2);
             entity.Property(x => x.FechaPago).HasColumnName("fecha_pago");
             entity.Property(x => x.MetodoPago).HasColumnName("metodo_pago");
             entity.Property(x => x.Comprobante).HasColumnName("comprobante");
             entity.Property(x => x.TipoPago).HasColumnName("tipo_pago");
             entity.Property(x => x.IdPedido).HasColumnName("id_pedido");
-            entity.HasOne(x => x.Pedido).WithMany(x => x.Pagos).HasForeignKey(x => x.IdPedido);
+
+            entity.HasOne(x => x.Pedido)
+                .WithMany(x => x.Pagos)
+                .HasForeignKey(x => x.IdPedido);
         });
 
         modelBuilder.Entity<Material>(entity =>
         {
             entity.ToTable("materiales");
             entity.HasKey(x => x.IdMaterial);
+            entity.Ignore(x => x.Consumos);
             entity.Property(x => x.IdMaterial).HasColumnName("id_material");
             entity.Property(x => x.NombreMaterial).HasColumnName("nombre_material");
             entity.Property(x => x.Descripcion).HasColumnName("descripcion");
-            entity.Property(x => x.StockActual).HasColumnName("stock_actual").HasPrecision(10,2);
-            entity.Property(x => x.StockMinimo).HasColumnName("stock_minimo").HasPrecision(10,2);
+            entity.Property(x => x.StockActual).HasColumnName("stock_actual").HasPrecision(10, 2);
+            entity.Property(x => x.StockMinimo).HasColumnName("stock_minimo").HasPrecision(10, 2);
             entity.Property(x => x.UnidadMedida).HasColumnName("unidad_medida");
             entity.Property(x => x.Estado).HasColumnName("estado");
+            
+            entity.Ignore(x => x.Consumos);
         });
 
         modelBuilder.Entity<MovimientoInventario>(entity =>
@@ -184,22 +217,29 @@ public class MubiDbContext : DbContext
             entity.HasKey(x => x.IdMovimientoInventario);
             entity.Property(x => x.IdMovimientoInventario).HasColumnName("id_movimiento");
             entity.Property(x => x.TipoMovimiento).HasColumnName("tipo_movimiento");
-            entity.Property(x => x.Cantidad).HasColumnName("cantidad").HasPrecision(10,2);
+            entity.Property(x => x.Cantidad).HasColumnName("cantidad").HasPrecision(10, 2);
             entity.Property(x => x.Motivo).HasColumnName("motivo");
             entity.Property(x => x.FechaMovimiento).HasColumnName("fecha_movimiento");
             entity.Property(x => x.IdMaterial).HasColumnName("id_material");
         });
 
         modelBuilder.Entity<ConsumoMaterial>(entity =>
-        {
-            entity.ToTable("consumo_materiales");
-            entity.HasKey(x => x.IdConsumoMaterial);
-            entity.Property(x => x.IdConsumoMaterial).HasColumnName("id_consumo");
-            entity.Property(x => x.CantidadUsada).HasColumnName("cantidad_usada").HasPrecision(10,2);
-            entity.Property(x => x.FechaRegistro).HasColumnName("fecha_registro");
-            entity.Property(x => x.IdMaterial).HasColumnName("id_material");
-            entity.Property(x => x.IdPedido).HasColumnName("id_pedido");
-        });
+            {
+                entity.ToTable("consumo_materiales", tb => tb.UseSqlOutputClause(false));
+                entity.HasKey(x => x.IdConsumoMaterial);
+
+                entity.Property(x => x.IdConsumoMaterial).HasColumnName("id_consumo");
+                entity.Property(x => x.CantidadUsada).HasColumnName("cantidad_usada").HasPrecision(10, 2);
+                entity.Property(x => x.FechaRegistro).HasColumnName("fecha_registro");
+                entity.Property(x => x.IdMaterial).HasColumnName("id_material");
+                entity.Property(x => x.IdPedido).HasColumnName("id_pedido");
+
+                entity.HasOne(x => x.Pedido)
+                    .WithMany(x => x.ConsumosMaterial)
+                    .HasForeignKey(x => x.IdPedido);
+
+                entity.Ignore(x => x.Material);
+            });
 
         modelBuilder.Entity<Contacto>(entity =>
         {
@@ -224,6 +264,7 @@ public class MubiDbContext : DbContext
             entity.Property(x => x.FechaSolicitud).HasColumnName("fecha_solicitud");
             entity.Property(x => x.FechaExpiracion).HasColumnName("fecha_expiracion");
             entity.Property(x => x.Usado).HasColumnName("usado");
+            
         });
     }
 }

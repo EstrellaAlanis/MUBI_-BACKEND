@@ -17,13 +17,19 @@ public class PedidoService : IPedidoService
 
     public async Task<IEnumerable<PedidoResponseDto>> GetAllAsync()
     {
-        var data = await _context.Pedidos.Include(x=>x.Cliente).OrderByDescending(x=>x.IdPedido).ToListAsync();
+        var data = await _context.Pedidos
+        .Include(x => x.Cliente)
+        .Include(x => x.Detalles)
+        .ThenInclude(x => x.Producto).OrderByDescending(x=>x.IdPedido).ToListAsync();
         return _mapper.Map<IEnumerable<PedidoResponseDto>>(data);
     }
 
     public async Task<PedidoResponseDto?> GetByIdAsync(int id)
     {
-        var e = await _context.Pedidos.Include(x=>x.Cliente).FirstOrDefaultAsync(x=>x.IdPedido==id);
+        var e = await _context.Pedidos
+        .Include(x => x.Cliente)
+        .Include(x => x.Detalles)
+        .ThenInclude(x => x.Producto).FirstOrDefaultAsync(x=>x.IdPedido==id);
         return e==null?null:_mapper.Map<PedidoResponseDto>(e);
     }
 
@@ -37,6 +43,7 @@ public class PedidoService : IPedidoService
             IdCliente = dto.IdCliente,
             EstadoPedido = NormalizeEstado(dto.EstadoPedido),
             Observaciones = dto.Observaciones,
+            RutaExcelTallas = dto.RutaExcelTallas,
             FechaPedido = DateTime.Now,
             FechaActualizacion = DateTime.Now
         };
@@ -52,7 +59,9 @@ public class PedidoService : IPedidoService
                 DisenoPersonalizado = item.DisenoPersonalizado,
                 DescripcionDiseno = item.DescripcionDiseno,
                 PrecioUnitario = item.PrecioUnitario,
-                IdProducto = item.IdProducto
+                IdProducto = item.IdProducto,
+                RutaDisenoFrontal = item.RutaDisenoFrontal,
+                RutaDisenoPosterior = item.RutaDisenoPosterior,
             });
         }
 
@@ -68,7 +77,11 @@ public class PedidoService : IPedidoService
 
         _context.Pedidos.Add(pedido);
         await _context.SaveChangesAsync();
-        pedido = await _context.Pedidos.Include(x=>x.Cliente).FirstAsync(x=>x.IdPedido==pedido.IdPedido);
+        pedido = await _context.Pedidos
+        .Include(x => x.Cliente)
+        .Include(x => x.Detalles)
+        .ThenInclude(x => x.Producto)
+        .FirstAsync(x => x.IdPedido == pedido.IdPedido);
         return _mapper.Map<PedidoResponseDto>(pedido);
     }
 
@@ -96,23 +109,35 @@ public class PedidoService : IPedidoService
     }
 
     public async Task<bool> DeleteAsync(int id)
-    {
-        var e = await _context.Pedidos.Include(x => x.Detalles).Include(x => x.Pagos).Include(x => x.HistorialEstados).FirstOrDefaultAsync(x => x.IdPedido == id);
-        if(e==null) return false;
-        _context.DetallesPedido.RemoveRange(e.Detalles);
-        _context.Pagos.RemoveRange(e.Pagos);
-        _context.HistorialEstadosPedido.RemoveRange(e.HistorialEstados);
-        _context.Pedidos.Remove(e);
-        await _context.SaveChangesAsync();
-        return true;
-    }
+{
+    var e = await _context.Pedidos
+        .Include(x => x.Detalles)
+        .Include(x => x.Pagos)
+        .Include(x => x.HistorialEstados)
+        .FirstOrDefaultAsync(x => x.IdPedido == id);
 
+    if (e == null) return false;
+
+    await _context.Database.ExecuteSqlInterpolatedAsync(
+        $"DELETE FROM consumo_materiales WHERE id_pedido = {id}"
+    );
+
+    _context.DetallesPedido.RemoveRange(e.Detalles);
+    _context.Pagos.RemoveRange(e.Pagos);
+    _context.HistorialEstadosPedido.RemoveRange(e.HistorialEstados);
+    _context.Pedidos.Remove(e);
+
+    await _context.SaveChangesAsync();
+
+    return true;
+}
     private static string NormalizeEstado(string? estado)
     {
         var value = (estado ?? "pendiente").Trim().ToLower().Replace(" ", "_");
         return value switch
         {
             "confirmado" => "confirmado",
+            "pagado" => "pagado",
             "en_proceso" => "en_proceso",
             "entregado" => "entregado",
             "cancelado" => "cancelado",

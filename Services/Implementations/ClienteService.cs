@@ -6,6 +6,8 @@ using Mubi.Api.DTOs.Create;
 using Mubi.Api.DTOs.Update;
 using Mubi.Api.Models;
 using Mubi.Api.Services.Interfaces;
+using Mubi.Api.Security;
+using System.Net.Http.Json;
 
 namespace Mubi.Api.Services.Implementations;
 
@@ -43,14 +45,34 @@ public class ClienteService : IClienteService
         if (string.IsNullOrWhiteSpace(correo))
             throw new Exception("El correo del cliente es obligatorio.");
 
+        if (string.IsNullOrWhiteSpace(dto.Contrasena))
+            throw new Exception("La contraseña es obligatoria.");
+
         if (!string.IsNullOrWhiteSpace(documento) && documento.Length != 8)
             throw new Exception("El DNI debe tener 8 dígitos.");
 
         if (await _context.Clientes.AnyAsync(x => x.Correo == correo))
             throw new Exception("Ya existe un cliente con ese correo.");
 
+        if (await _context.Usuarios.AnyAsync(x => x.Correo == correo))
+            throw new Exception("Ya existe un usuario con ese correo.");
+
         if (!string.IsNullOrWhiteSpace(documento) && await _context.Clientes.AnyAsync(x => x.DocumentoIdentidad == documento))
             throw new Exception("Ya existe un cliente con ese DNI.");
+
+        var usuario = new Usuario
+        {
+            Nombre = dto.Nombres.Trim(),
+            Apellido = dto.Apellidos.Trim(),
+            Correo = correo,
+            Contrasena = PasswordHasher.Hash(dto.Contrasena),
+            Estado = "activo",
+            FechaRegistro = DateTime.Now,
+            IdRol = 2
+        };
+
+        _context.Usuarios.Add(usuario);
+        await _context.SaveChangesAsync();
 
         var e = new Cliente
         {
@@ -61,11 +83,12 @@ public class ClienteService : IClienteService
             Direccion = dto.Direccion?.Trim(),
             DocumentoIdentidad = documento,
             FechaRegistro = DateTime.Now,
-            IdUsuario = dto.IdUsuario
+            IdUsuario = usuario.IdUsuario
         };
 
         _context.Clientes.Add(e);
         await _context.SaveChangesAsync();
+
         return _mapper.Map<ClienteResponseDto>(e);
     }
 
@@ -119,51 +142,63 @@ public class ClienteService : IClienteService
         var e = await _context.Clientes.Include(x => x.Pedidos).FirstOrDefaultAsync(x => x.IdCliente == id);
         if (e == null) return false;
         if (e.Pedidos.Any()) throw new Exception("No se puede eliminar el cliente porque tiene pedidos registrados.");
+
         _context.Clientes.Remove(e);
         await _context.SaveChangesAsync();
+
         return true;
     }
 
-    public Task<DniConsultaResponseDto> ConsultarDniAsync(string dni)
+   public async Task<DniConsultaResponseDto> ConsultarDniAsync(string dni)
+{
+    var limpio = NormalizeDocumento(dni) ?? string.Empty;
+
+    if (limpio.Length != 8)
+        throw new Exception("Ingrese un DNI válido de 8 dígitos.");
+
+    var token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJlbWFpbCI6ImFuZ2VsbWFuYW5pdGE5NzlAZ21haWwuY29tIn0.G4fFKJkX1pDRABGoKcI9TUIak6uaB3TUnVsHuHF-c3M";
+    var url = $"https://dniruc.apisperu.com/api/v1/dni/{limpio}?token={token}";
+
+    using var httpClient = new HttpClient();
+    var response = await httpClient.GetAsync(url);
+
+    if (!response.IsSuccessStatusCode)
+        throw new Exception("No se pudo consultar el DNI en APIs Perú.");
+
+    var json = await response.Content.ReadFromJsonAsync<ApisPeruDniResponse>();
+
+    if (json == null || string.IsNullOrWhiteSpace(json.Nombres))
     {
-        var limpio = NormalizeDocumento(dni) ?? string.Empty;
-        if (limpio.Length != 8)
-            throw new Exception("Ingrese un DNI válido de 8 dígitos.");
-
-        var demo = new Dictionary<string, (string Nombres, string Apellidos)>
-        {
-            ["71234567"] = ("Jackeline", "Advíncula"),
-            ["74561234"] = ("Rosa", "Sánchez"),
-            ["70111222"] = ("Carlos", "Ruiz"),
-            ["76543210"] = ("Alanis Kaley", "Estrella Coral"),
-            ["12345678"] = ("Ángel Eduardo", "Mananita Asencio")
-        };
-
-        if (demo.TryGetValue(limpio, out var persona))
-        {
-            return Task.FromResult(new DniConsultaResponseDto
-            {
-                Dni = limpio,
-                Nombres = persona.Nombres,
-                Apellidos = persona.Apellidos,
-                Fuente = "Consulta DNI preparada para integración SUNAT/RENIEC - modo demo local",
-                Encontrado = true
-            });
-        }
-
-        return Task.FromResult(new DniConsultaResponseDto
+        return new DniConsultaResponseDto
         {
             Dni = limpio,
             Nombres = "",
             Apellidos = "",
-            Fuente = "Modo demo local: DNI no encontrado",
+            Fuente = "APIs Perú",
             Encontrado = false
-        });
+        };
     }
+
+    return new DniConsultaResponseDto
+    {
+        Dni = limpio,
+        Nombres = json.Nombres,
+        Apellidos = $"{json.ApellidoPaterno} {json.ApellidoMaterno}".Trim(),
+        Fuente = "APIs Perú",
+        Encontrado = true
+    };
+}
 
     private static string? NormalizeDocumento(string? documento)
     {
         if (string.IsNullOrWhiteSpace(documento)) return null;
         return new string(documento.Where(char.IsDigit).ToArray());
     }
+    private class ApisPeruDniResponse
+{
+    public string Dni { get; set; } = string.Empty;
+    public string Nombres { get; set; } = string.Empty;
+    public string ApellidoPaterno { get; set; } = string.Empty;
+    public string ApellidoMaterno { get; set; } = string.Empty;
+}
 }

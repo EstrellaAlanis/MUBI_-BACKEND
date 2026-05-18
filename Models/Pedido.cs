@@ -7,6 +7,7 @@ public class Pedido
     public decimal MontoTotal { get; set; }
     public decimal SaldoPendiente { get; set; }
     public string? Observaciones { get; set; }
+    public string? RutaExcelTallas { get; set; }
     public DateTime? FechaActualizacion { get; set; }
     public int IdCliente { get; set; }
     public Cliente? Cliente { get; set; }

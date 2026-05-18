@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Mubi.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d29983dc3cc61fb4d32cd2274786a2e5ebe1d074")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bcb3b0fa22611e8dd0bae2ad02620dfc3e9ccc1e")]
 [assembly: System.Reflection.AssemblyProductAttribute("Mubi.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Mubi.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

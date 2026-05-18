@@ -16,4 +16,6 @@ public class DetallePedido
     public int IdProducto { get; set; }
     public Pedido? Pedido { get; set; }
     public Producto? Producto { get; set; }
+    public string? RutaDisenoFrontal { get; set; }
+    public string? RutaDisenoPosterior { get; set; }
 }

@@ -1,4 +1,5 @@
 C:\Users\ASUS\Desktop\backend\Mubi.Api\bin\Debug\net8.0\appsettings.json
+C:\Users\ASUS\Desktop\backend\Mubi.Api\bin\Debug\net8.0\Mubi.Api.staticwebassets.runtime.json
 C:\Users\ASUS\Desktop\backend\Mubi.Api\bin\Debug\net8.0\Mubi.Api.staticwebassets.endpoints.json
 C:\Users\ASUS\Desktop\backend\Mubi.Api\bin\Debug\net8.0\Mubi.Api.exe
 C:\Users\ASUS\Desktop\backend\Mubi.Api\bin\Debug\net8.0\Mubi.Api.deps.json
@@ -124,6 +125,7 @@ C:\Users\ASUS\Desktop\backend\Mubi.Api\obj\Debug\net8.0\Mubi.Api.AssemblyInfo.cs
 C:\Users\ASUS\Desktop\backend\Mubi.Api\obj\Debug\net8.0\Mubi.Api.csproj.CoreCompileInputs.cache
 C:\Users\ASUS\Desktop\backend\Mubi.Api\obj\Debug\net8.0\Mubi.Api.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\ASUS\Desktop\backend\Mubi.Api\obj\Debug\net8.0\Mubi.Api.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\ASUS\Desktop\backend\Mubi.Api\obj\Debug\net8.0\Mubi.Api.sourcelink.json
 C:\Users\ASUS\Desktop\backend\Mubi.Api\obj\Debug\net8.0\rjimswa.dswa.cache.json
 C:\Users\ASUS\Desktop\backend\Mubi.Api\obj\Debug\net8.0\rjsmrazor.dswa.cache.json
 C:\Users\ASUS\Desktop\backend\Mubi.Api\obj\Debug\net8.0\rjsmcshtml.dswa.cache.json
@@ -139,4 +141,3 @@ C:\Users\ASUS\Desktop\backend\Mubi.Api\obj\Debug\net8.0\refint\Mubi.Api.dll
 C:\Users\ASUS\Desktop\backend\Mubi.Api\obj\Debug\net8.0\Mubi.Api.pdb
 C:\Users\ASUS\Desktop\backend\Mubi.Api\obj\Debug\net8.0\Mubi.Api.genruntimeconfig.cache
 C:\Users\ASUS\Desktop\backend\Mubi.Api\obj\Debug\net8.0\ref\Mubi.Api.dll
-C:\Users\ASUS\Desktop\backend\Mubi.Api\obj\Debug\net8.0\Mubi.Api.sourcelink.json

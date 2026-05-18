@@ -19,11 +19,31 @@ public class MappingConfig : Profile
         CreateMap<Categoria, CategoriaResponseDto>().ReverseMap();
         CreateMap<CreateCategoriaDto, Categoria>();
         CreateMap<UpdateCategoriaDto, Categoria>();
-        CreateMap<Producto, ProductoResponseDto>().ForMember(dest => dest.Categoria, opt => opt.MapFrom(src => src.Categoria != null ? src.Categoria.NombreCategoria : null));
-        CreateMap<CreateProductoDto, Producto>();
+        CreateMap<Producto, ProductoResponseDto>()
+        .ForMember(dest => dest.Categoria,
+            opt => opt.MapFrom(src => src.Categoria != null ? src.Categoria.NombreCategoria : null))
+        .ForMember(dest => dest.RutaImagenPrincipal,
+            opt => opt.MapFrom(src =>
+                src.Imagenes != null && src.Imagenes.Any()
+                    ? src.Imagenes
+                        .OrderByDescending(i => i.EsPrincipal)
+                        .ThenBy(i => i.IdImagenProducto)
+                        .Select(i => i.RutaImagen)
+                        .FirstOrDefault()
+                    : null));        CreateMap<CreateProductoDto, Producto>();
         CreateMap<UpdateProductoDto, Producto>();
-        CreateMap<Pedido, PedidoResponseDto>().ForMember(dest => dest.Cliente, opt => opt.MapFrom(src => src.Cliente != null ? $"{src.Cliente.Nombres} {src.Cliente.Apellidos}".Trim() : null));
-        CreateMap<CreatePedidoDto, Pedido>();
+        CreateMap<DetallePedido, DetallePedidoResponseDto>()
+    .ForMember(dest => dest.Producto,
+        opt => opt.MapFrom(src => src.Producto != null ? src.Producto.Nombre : null));
+
+CreateMap<Pedido, PedidoResponseDto>()
+    .ForMember(dest => dest.Cliente,
+        opt => opt.MapFrom(src => src.Cliente != null
+            ? $"{src.Cliente.Nombres} {src.Cliente.Apellidos}".Trim()
+            : null))
+    .ForMember(dest => dest.Detalles,
+        opt => opt.MapFrom(src => src.Detalles));
+        CreateMap<CreatePedidoDto, Pedido>(); 
         CreateMap<Pago, PagoResponseDto>().ReverseMap();
         CreateMap<CreatePagoDto, Pago>();
         CreateMap<Material, MaterialResponseDto>().ReverseMap();

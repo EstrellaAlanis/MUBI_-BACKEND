@@ -13,4 +13,5 @@ public class Material
     public string Estado { get; set; } = "Activo";
     public ICollection<MovimientoInventario> Movimientos { get; set; } = new List<MovimientoInventario>();
     public ICollection<ConsumoMaterial> Consumos { get; set; } = new List<ConsumoMaterial>();
+    public ICollection<ConsumoMaterial> ConsumosMaterial { get; set; } = new List<ConsumoMaterial>();
 }
