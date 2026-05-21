@@ -177,6 +177,91 @@ public class UsuarioService : IUsuarioService
         return await ValidarCodigoAsync(correo, dto.Codigo, "registro");
     }
 
+    public async Task<bool> EnviarCodigoGoogleAsync(EnviarCodigoRegistroDto dto)
+    {
+        var correo = NormalizeEmail(dto.Correo);
+
+        if (string.IsNullOrWhiteSpace(correo))
+            throw new Exception("El correo de Google es obligatorio.");
+
+        var codigo = GenerateCode();
+        await GuardarCodigoAsync(correo, codigo, "google");
+        await _emailService.SendVerificationCodeAsync(correo, codigo, "google");
+
+        return true;
+    }
+
+    public async Task<UsuarioResponseDto?> VerificarCodigoGoogleAsync(VerificarCodigoDto dto)
+    {
+        var correo = NormalizeEmail(dto.Correo);
+        var ok = await ValidarCodigoAsync(correo, dto.Codigo, "google");
+
+        if (!ok) return null;
+
+        var usuario = await _context.Usuarios
+            .Include(x => x.Rol)
+            .FirstOrDefaultAsync(x => x.Correo.ToLower() == correo);
+
+        if (usuario == null)
+        {
+            usuario = await CrearUsuarioClienteGoogleAsync(correo);
+        }
+
+        return _mapper.Map<UsuarioResponseDto>(usuario);
+    }
+
+    private async Task<Usuario> CrearUsuarioClienteGoogleAsync(string correo)
+    {
+        var nombreBase = correo.Split('@')[0];
+        var nombreLegible = string.IsNullOrWhiteSpace(nombreBase)
+            ? "Cliente Google"
+            : char.ToUpper(nombreBase[0]) + nombreBase[1..];
+
+        var usuario = new Usuario
+        {
+            Nombre = nombreLegible,
+            Apellido = "",
+            Correo = correo,
+            Contrasena = PasswordHasher.Hash($"Google-{Guid.NewGuid():N}*"),
+            Estado = "activo",
+            FechaRegistro = DateTime.Now,
+            IdRol = 2
+        };
+
+        _context.Usuarios.Add(usuario);
+        await _context.SaveChangesAsync();
+
+        var existeCliente = await _context.Clientes.AnyAsync(x => x.Correo.ToLower() == correo);
+
+        if (!existeCliente)
+        {
+            var cliente = new Cliente
+            {
+                Nombres = nombreLegible,
+                Apellidos = "",
+                Correo = correo,
+                Telefono = "",
+                Direccion = "",
+                ReferenciaDireccion = "",
+                TipoCliente = "persona",
+                Ruc = null,
+                RazonSocial = null,
+                DocumentoIdentidad = "",
+                FechaRegistro = DateTime.Now,
+                IdUsuario = usuario.IdUsuario
+            };
+
+            _context.Clientes.Add(cliente);
+            await _context.SaveChangesAsync();
+        }
+
+        usuario = await _context.Usuarios
+            .Include(x => x.Rol)
+            .FirstAsync(x => x.IdUsuario == usuario.IdUsuario);
+
+        return usuario;
+    }
+
     private async Task GuardarCodigoAsync(string correo, string codigo, string proposito)
     {
         var anteriores = await _context.CodigosVerificacion

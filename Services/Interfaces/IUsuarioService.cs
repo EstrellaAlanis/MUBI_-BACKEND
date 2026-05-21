@@ -16,6 +16,10 @@ public interface IUsuarioService
 
     Task<bool> EnviarCodigoLoginAsync(LoginDto dto);
     Task<UsuarioResponseDto?> VerificarCodigoLoginAsync(VerificarCodigoDto dto);
+
     Task<bool> EnviarCodigoRegistroAsync(EnviarCodigoRegistroDto dto);
     Task<bool> VerificarCodigoRegistroAsync(VerificarCodigoDto dto);
+
+    Task<bool> EnviarCodigoGoogleAsync(EnviarCodigoRegistroDto dto);
+    Task<UsuarioResponseDto?> VerificarCodigoGoogleAsync(VerificarCodigoDto dto);
 }

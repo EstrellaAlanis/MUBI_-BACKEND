@@ -59,7 +59,7 @@ public class UsuariosController : ControllerBase
             : Ok(data);
     }
 
-    // Paso 1: valida correo + contraseña y envía código al correo.
+    // Login seguro paso 1: valida correo + contraseña y envía código.
     [HttpPost("login/enviar-codigo")]
     public async Task<IActionResult> EnviarCodigoLogin(LoginDto dto)
     {
@@ -69,7 +69,7 @@ public class UsuariosController : ControllerBase
             : Unauthorized(new { message = "Credenciales inválidas o usuario inactivo." });
     }
 
-    // Paso 2: verifica el código y recién devuelve la sesión del usuario.
+    // Login seguro paso 2: verifica código y devuelve usuario.
     [HttpPost("login/verificar-codigo")]
     public async Task<IActionResult> VerificarCodigoLogin(VerificarCodigoDto dto)
     {
@@ -89,7 +89,7 @@ public class UsuariosController : ControllerBase
             : BadRequest(new { message = "No se pudo enviar el código." });
     }
 
-    // Registro paso 2: valida el código antes de permitir crear la cuenta.
+    // Registro paso 2: verifica código.
     [HttpPost("registro/verificar-codigo")]
     public async Task<IActionResult> VerificarCodigoRegistro(VerificarCodigoDto dto)
     {
@@ -97,5 +97,28 @@ public class UsuariosController : ControllerBase
         return ok
             ? Ok(new { verificado = true, message = "Correo verificado correctamente." })
             : BadRequest(new { verificado = false, message = "Código inválido o expirado." });
+    }
+
+    // Google + OTP paso 1:
+    // Google ya valida la cuenta, pero MUBI envía un código adicional al mismo Gmail.
+    [HttpPost("google/enviar-codigo")]
+    public async Task<IActionResult> EnviarCodigoGoogle(EnviarCodigoRegistroDto dto)
+    {
+        var ok = await _service.EnviarCodigoGoogleAsync(dto);
+        return ok
+            ? Ok(new { message = "Código enviado al correo validado por Google." })
+            : BadRequest(new { message = "No se pudo enviar el código de Google." });
+    }
+
+    // Google + OTP paso 2:
+    // Si el usuario existe, entra.
+    // Si no existe, crea perfil básico de cliente y entra.
+    [HttpPost("google/verificar-codigo")]
+    public async Task<IActionResult> VerificarCodigoGoogle(VerificarCodigoDto dto)
+    {
+        var data = await _service.VerificarCodigoGoogleAsync(dto);
+        return data == null
+            ? Unauthorized(new { message = "Código inválido o expirado." })
+            : Ok(data);
     }
 }
