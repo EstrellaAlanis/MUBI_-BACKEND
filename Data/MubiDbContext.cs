@@ -24,6 +24,7 @@ public class MubiDbContext : DbContext
     public DbSet<ConsumoMaterial> ConsumosMaterial => Set<ConsumoMaterial>();
     public DbSet<Contacto> Contactos => Set<Contacto>();
     public DbSet<RecuperacionContrasena> RecuperacionesContrasena => Set<RecuperacionContrasena>();
+    public DbSet<CodigoVerificacion> CodigosVerificacion => Set<CodigoVerificacion>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -298,6 +299,19 @@ public class MubiDbContext : DbContext
             entity.Property(x => x.FechaExpiracion).HasColumnName("fecha_expiracion");
             entity.Property(x => x.Usado).HasColumnName("usado");
             
+        });
+        modelBuilder.Entity<CodigoVerificacion>(entity =>
+        {
+            entity.ToTable("codigos_verificacion");
+            entity.HasKey(x => x.IdCodigo);
+            entity.Property(x => x.IdCodigo).HasColumnName("id_codigo");
+            entity.Property(x => x.Correo).HasColumnName("correo").HasMaxLength(150).IsRequired();
+            entity.Property(x => x.Codigo).HasColumnName("codigo").HasMaxLength(10).IsRequired();
+            entity.Property(x => x.Proposito).HasColumnName("proposito").HasMaxLength(30).IsRequired();
+            entity.Property(x => x.FechaCreacion).HasColumnName("fecha_creacion");
+            entity.Property(x => x.FechaExpiracion).HasColumnName("fecha_expiracion");
+            entity.Property(x => x.Usado).HasColumnName("usado");
+            entity.HasIndex(x => new { x.Correo, x.Proposito, x.Usado });
         });
     }
 }

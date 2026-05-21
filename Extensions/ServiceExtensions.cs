@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Mubi.Api.Config;
 using Mubi.Api.Data;
 using Mubi.Api.Services.Implementations;
 using Mubi.Api.Services.Interfaces;
@@ -12,6 +13,9 @@ public static class ServiceExtensions
         services.AddDbContext<MubiDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+        services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
+
+        services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IRolService, RolService>();
         services.AddScoped<IUsuarioService, UsuarioService>();
         services.AddScoped<IClienteService, ClienteService>();
